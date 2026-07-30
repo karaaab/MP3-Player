@@ -1,5 +1,4 @@
-/* CANNOT UPLOAD CHANGES OR RUN UNTIL MILLIS CODE HAS BEEN FINALIZED */
-/**next steps: set up & test mp3 module. design display. add pause/play and prev buttons**/
+/**next steps: set up & test mp3 module. design display.**/
 /**for the display:
 <now playing< (scrolling)
 song title (changes)
@@ -67,6 +66,9 @@ void loop() {
 			delay(120);
 			next();
 			i++;
+			if(i >= 50){
+				i = 1;
+			}
 			funcdraw();
 			previousMillis = millis();
 			songState = play_song;
@@ -76,6 +78,9 @@ void loop() {
 			delay(120);
 			prev();
 			i = i - 1;
+			if(i <= 0){
+				i = 50;
+			}
 			funcdraw();
 			previousMillis = millis();
 			songState = play_song;
