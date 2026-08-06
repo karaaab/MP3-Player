@@ -1,4 +1,4 @@
-/**next steps: set up & test mp3 module. design display.**/
+/*next step: add pause/play functionality*/
 /**for the display:
 <now playing< (scrolling)
 song title (changes)
@@ -8,6 +8,9 @@ prev - pause/play - forward*/
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <YX5300_ESP32.h>
+#define RX 0
+#define TX 1
 #define SCREEN_WIDTH 128     // OLED display width, in pixels
 #define SCREEN_HEIGHT 64     // OLED display height, in pixels
 #define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -19,16 +22,16 @@ unsigned long previousMillis;
 int b_next = 10;  //button defined pin
 int b_prev = 12;
 int i;
-
 enum { play_song,
 	     next_song,
 	     prev_song };
 unsigned char songState;
-
+YX5300_ESP32 mp3;
 
 void setup() {
-	pinMode(b_next, INPUT_PULLUP);  //needs to be INPUT_PULLUP not just INPUT if not using resistor
-	pinMode(b_prev, INPUT_PULLUP);  //needs to be INPUT_PULLUP not just INPUT if not using resistor
+	mp3 = YX5300_ESP32(Serial2, RX, TX);  //init yx5300 connection
+	pinMode(b_next, INPUT_PULLUP);        //needs to be INPUT_PULLUP not just INPUT if not using resistor
+	pinMode(b_prev, INPUT_PULLUP);        //needs to be INPUT_PULLUP not just INPUT if not using resistor
 	Serial.begin(9600);
 
 	if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -36,6 +39,7 @@ void setup() {
 		for (;;)
 			;
 	}
+
 	display.display();
 	delay(2000);  // Pause for 2 seconds
 	display.clearDisplay();
@@ -47,26 +51,37 @@ void loop() {
 	int prev_status = digitalRead(b_prev);
 	unsigned long currentMillis = millis();
 
+	Serial.write("We are now entering state machine.");
+	Serial.write('\n');
 	switch (songState) {
 
 		case play_song:
+			Serial.write("case play song");
+			delay(200);
+			if (currentMillis - previousMillis < 60000) {
+				Serial.write("looking");
+				Serial.write('\n');
+				if (next_status == LOW) {
+					Serial.write("going to next song");
+					Serial.write('\n');
+					delay(120);
+					songState = next_song;
 
-			if (next_status == LOW) {
-				songState = next_song;
-			} else if (prev_status == LOW) {
-				songState = prev_song;
-			}
-
-			else if (currentMillis - previousMillis >= 3600) {	//automatically continue to next song after current song is over
+				} else if (prev_status == LOW) {
+					songState = prev_song;
+				}
+			} else if (currentMillis - previousMillis >= 60000) {  //automatically continue to next song after current song is over
 				songState = next_song;
 			}
 			break;
 
 		case next_song:
+			Serial.write("next song case reached");
+			Serial.write('\n');
 			delay(120);
-			next();
+			mp3.next();
 			i++;
-			if(i >= 50){
+			if (i >= 50) {
 				i = 1;
 			}
 			funcdraw();
@@ -76,9 +91,9 @@ void loop() {
 
 		case prev_song:
 			delay(120);
-			prev();
+			mp3.prev();
 			i = i - 1;
-			if(i <= 0){
+			if (i <= 0) {
 				i = 50;
 			}
 			funcdraw();
@@ -86,16 +101,6 @@ void loop() {
 			songState = play_song;
 			break;
 	}
-}
-
-void next() {		//will be defined accurately later for player
-	Serial.write("next song");
-	Serial.write('\n');
-}
-
-void prev() {		//will be defined accurately later for player
-	Serial.write("previous song");
-	Serial.write('\n');
 }
 
 void funcdraw() {
@@ -109,7 +114,7 @@ void funcdraw() {
 }
 
 
-void testscrolltext(void) { //will be used for display later
+void testscrolltext(void) {  //will be used for display later
 	display.clearDisplay();
 
 	display.setTextSize(2);  // Draw 2X-scale text
@@ -126,6 +131,4 @@ void testscrolltext(void) { //will be used for display later
 	delay(2000);
 	display.stopscroll();
 	delay(1000);
-
 }
-
