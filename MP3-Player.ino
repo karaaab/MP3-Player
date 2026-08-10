@@ -40,6 +40,7 @@ void setup() {
 	display.clearDisplay();
 	previousMillis = millis();
 	pauseMillis = millis();
+	mp3.playFolderInLoop(01);
 }
 
 void loop() {
@@ -51,7 +52,7 @@ void loop() {
 	switch (songState) {
 		case play_song:
 			delay(200);
-			if (currentMillis - previousMillis < 60000) {
+			if (currentMillis >= previousMillis) {
 				if (next_status == LOW) {
 					delay(120);
 					songState = next_song;
@@ -60,9 +61,7 @@ void loop() {
 				} else if (prev_status == LOW) {
 					songState = prev_song;
 				}
-			} else if (currentMillis - previousMillis >= 60000) {  //automatically continue to next song after current song is over
-				songState = next_song;
-			}  //may not need this anymore given the new library I am using. will experiment further.
+			}
 			break;
 		case pause_song:
 			mp3.pause();
