@@ -45,6 +45,7 @@ void setup() {
 	display.clearDisplay();
 	previousMillis = millis();
 	pauseMillis = millis();
+	mp3.playFolderInLoop(01);
 }
 
 void loop() {
