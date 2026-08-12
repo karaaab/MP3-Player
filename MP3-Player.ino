@@ -21,10 +21,8 @@ int b_vinc = 4;
 int b_vdec = 3;
 int i;
 enum { play_song,
-	     pause_song,
-	     next_song,
-	     prev_song,
-	     volume_ctrl };
+		pause_song,
+};
 unsigned char songState;
 YX5300_ESP32 mp3;
 void setup() {
@@ -60,19 +58,40 @@ void loop() {
 		case play_song:
 			delay(200);
 			if (currentMillis >= previousMillis) {
-				if (next_status == LOW) {
+				if (next_status == LOW) {  //next
+					Serial.write("next song case reached");
+					Serial.write('\n');
 					delay(120);
-					songState = next_song;
-				} else if (pause_status == LOW) {
+					mp3.next();
+					i++;
+					if (i >= 50) {
+						i = 1;
+					}
+					funcdraw();
+					previousMillis = millis();
+					songState = play_song;
+
+				} else if (pause_status == LOW) {  //pause
 					songState = pause_song;
-				} else if (prev_status == LOW) {
-					songState = prev_song;
-				} else if (vinc_status == LOW) {
+
+				} else if (prev_status == LOW) {  //prev
+					delay(120);
+					mp3.prev();
+					i = i - 1;
+					if (i <= 0) {
+						i = 50;
+					}
+					funcdraw();
+					previousMillis = millis();
+					songState = play_song;
+
+				} else if (vinc_status == LOW) {  //increase volume
 					mp3.incrementVolume();
 					Serial.write("up vol");
 					Serial.write('\n');
 					delay(100);
-				} else if (vdec_status == LOW) {
+
+				} else if (vdec_status == LOW) {  //decrease volume
 					mp3.decrementVolume();
 					Serial.write("down vol");
 					Serial.write('\n');
@@ -90,32 +109,6 @@ void loop() {
 					songState = play_song;
 				}
 			}
-			break;
-
-		case next_song:
-			Serial.write("next song case reached");
-			Serial.write('\n');
-			delay(120);
-			mp3.next();
-			i++;
-			if (i >= 50) {
-				i = 1;
-			}
-			funcdraw();
-			previousMillis = millis();
-			songState = play_song;
-			break;
-
-		case prev_song:
-			delay(120);
-			mp3.prev();
-			i = i - 1;
-			if (i <= 0) {
-				i = 50;
-			}
-			funcdraw();
-			previousMillis = millis();
-			songState = play_song;
 			break;
 	}
 }
