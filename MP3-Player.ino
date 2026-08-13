@@ -13,7 +13,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define LOGO_HEIGHT 16
 #define LOGO_WIDTH 16
 unsigned long previousMillis;
-unsigned long pauseMillis;
 int b_next = 10;  //button defined pin
 int b_pauseplay = 11;
 int b_prev = 12;
